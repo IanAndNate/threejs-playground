@@ -1,15 +1,13 @@
 /**
  * Simple skybox test
  */
-import { Canvas, extend, useLoader, useThree } from "@react-three/fiber";
+import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import React, { Suspense, useEffect } from "react";
 import styled from "@emotion/styled";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Texture, TextureLoader, WebGLCubeRenderTarget } from "three";
 import { CameraControls } from "../common/camera-controls";
 // @ts-ignore
 import SkyboxImage from "./assets/skybox3.jpg";
-extend({ OrbitControls });
 
 const Container = styled.div`
   width: 100%;

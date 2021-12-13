@@ -14,9 +14,6 @@ import styled from "@emotion/styled";
 import { CameraControls } from "../common/camera-controls";
 import { SelectiveBloom, EffectComposer } from "@react-three/postprocessing";
 import { DoubleSide, Mesh } from "three";
-import { OrbitControls } from "@react-three/drei";
-
-extend({ OrbitControls });
 
 const Container = styled.div`
   width: 100%;

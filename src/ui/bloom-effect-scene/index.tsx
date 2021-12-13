@@ -3,15 +3,12 @@
  *
  * Draw some rectangles with a "glow" effect
  */
-import { Canvas, extend, Vector2, Vector3 } from "@react-three/fiber";
+import { Canvas, Vector2, Vector3 } from "@react-three/fiber";
 import React from "react";
 import styled from "@emotion/styled";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { CameraControls } from "../common/camera-controls";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { DoubleSide } from "three";
-
-extend({ OrbitControls });
 
 const Container = styled.div`
   width: 100%;

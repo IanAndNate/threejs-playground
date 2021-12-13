@@ -5,14 +5,11 @@
  * But all the instances must share the same geometry and material
  * Position, rotation, scale could be transformed (via setMatrixAt)
  */
-import { Canvas, extend } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import React, { useEffect, useRef } from "react";
 import styled from "@emotion/styled";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { CameraControls } from "../common/camera-controls";
 import { InstancedMesh, DoubleSide, Object3D } from "three";
-// @ts-ignore
-extend({ OrbitControls });
 
 const Container = styled.div`
   width: 100%;

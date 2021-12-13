@@ -3,14 +3,12 @@
  *
  * https://docs.pmnd.rs/react-three-fiber/advanced/pitfalls#fetch-state-directly
  */
-import { Canvas, Vector3, extend, useFrame } from "@react-three/fiber";
+import { Canvas, Vector3, useFrame } from "@react-three/fiber";
 import React, { useRef } from "react";
 import styled from "@emotion/styled";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { Color, DoubleSide, Mesh, MeshBasicMaterial } from "three";
 import create from "zustand";
 import { CameraControls } from "../common/camera-controls";
-extend({ OrbitControls });
 
 interface Props {}
 

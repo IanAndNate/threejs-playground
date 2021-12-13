@@ -10,16 +10,13 @@
  * The final composer uses a custom shader pass which combines the rendered output of bloom composer with the base texture
  * appropriately.
  */
-import { Canvas, extend, useFrame, useThree } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import React, { useMemo } from "react";
 import styled from "@emotion/styled";
 import { CameraControls } from "../common/camera-controls";
-import { OrbitControls } from "@react-three/drei";
 // TODO yarn add postprocessing and import from there
 import * as THREE from "three";
 import { BloomLayeredRenderer } from "./bloom-layered-renderer";
-
-extend({ OrbitControls });
 
 const Container = styled.div`
   width: 100%;

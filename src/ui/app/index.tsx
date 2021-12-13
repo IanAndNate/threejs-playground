@@ -1,18 +1,14 @@
-import React, { useState } from "react";
-import { SkyboxScene } from "../skybox";
+import React from "react";
+import { Piano } from "../piano";
 
 // this effect is pretty cool
 // https://codesandbox.io/s/jflps
 
 export const App = () => {
-  const [count, setCount] = useState<number>(0);
-  const click = () => {
-    setCount(count + 1);
-  };
   return (
     <>
-      <h3>foo barz</h3>
-      <SkyboxScene />
+      <h3>Press QWERTY keys</h3>
+      <Piano />
     </>
   );
 };

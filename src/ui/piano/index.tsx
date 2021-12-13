@@ -3,20 +3,17 @@
  * - draw some boxes representing the piano keys
  * - when a key is pressed, show a bloom effect on the key so it "glows"
  */
-import { Canvas, extend, useFrame, Vector3 } from "@react-three/fiber";
+import { Canvas, useFrame, Vector3 } from "@react-three/fiber";
 import React, { useEffect, useRef } from "react";
 import styled from "@emotion/styled";
 import { CameraControls } from "../common/camera-controls";
 import { Mesh } from "three";
-import { OrbitControls } from "@react-three/drei";
 import { BloomLayeredRenderer } from "../custom-renderer/bloom-layered-renderer";
 import create from "zustand";
 
-extend({ OrbitControls });
-
 const Container = styled.div`
   width: 100%;
-  height: 400px;
+  height: 500px;
   border: 1px solid black;
 `;
 
