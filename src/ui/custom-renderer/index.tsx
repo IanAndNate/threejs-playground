@@ -16,11 +16,8 @@ import styled from "@emotion/styled";
 import { CameraControls } from "../common/camera-controls";
 import { OrbitControls } from "@react-three/drei";
 // TODO yarn add postprocessing and import from there
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import * as THREE from "three";
+import { BloomLayeredRenderer } from "./bloom-layered-renderer";
 
 extend({ OrbitControls });
 
@@ -30,100 +27,7 @@ const Container = styled.div`
   border: 1px solid black;
 `;
 
-const Renderer = () => {
-  const {
-    gl,
-    scene,
-    camera,
-    size: { width, height },
-  } = useThree();
-
-  const { finalComposer, bloomComposer } = useMemo(() => {
-    const renderScene = new RenderPass(scene, camera);
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(width, height),
-      1.5,
-      0.4,
-      0.85
-    );
-    bloomPass.strength = 3;
-    bloomPass.threshold = 0;
-    bloomPass.radius = 0;
-    const bloomComposer = new EffectComposer(gl);
-    bloomComposer.renderToScreen = false;
-    bloomComposer.addPass(renderScene);
-    bloomComposer.addPass(bloomPass);
-
-    const finalPass = new ShaderPass(
-      new THREE.ShaderMaterial({
-        uniforms: {
-          baseTexture: { value: null },
-          bloomTexture: { value: bloomComposer.renderTarget2.texture },
-        },
-        vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-        }
-      `,
-        fragmentShader: `
-        uniform sampler2D baseTexture;
-        uniform sampler2D bloomTexture;
-
-        varying vec2 vUv;
-
-        void main() {
-          gl_FragColor = ( texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ) );
-        }
-      `,
-        defines: {},
-      }),
-      "baseTexture"
-    );
-    finalPass.needsSwap = true;
-
-    const finalComposer = new EffectComposer(gl);
-    finalComposer.addPass(renderScene);
-    finalComposer.addPass(finalPass);
-    return { finalComposer, bloomComposer };
-  }, [scene, camera, gl, width, height]);
-
-  const bloomLayer = useMemo(() => {
-    const layers = new THREE.Layers();
-    layers.set(BLOOM_SCENE);
-    return layers;
-  }, []);
-
-  const darkMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({ color: "black" });
-  }, []);
-  useFrame(({ scene }) => {
-    // when rendering bloom, darken non-bloom materials
-    const materials = {};
-    scene.traverse((obj) => {
-      if (obj instanceof THREE.Mesh) {
-        if (bloomLayer.test(obj.layers) === false) {
-          materials[obj.uuid] = obj.material;
-          obj.material = darkMaterial;
-        }
-      }
-    });
-    bloomComposer.render();
-    // restore the materials for the final render
-    scene.traverse((obj) => {
-      if (materials[obj.uuid]) {
-        (obj as THREE.Mesh).material = materials[obj.uuid];
-        delete materials[obj.uuid];
-      }
-    });
-    finalComposer.render();
-  }, 1);
-  return null;
-};
-
 const BLOOM_SCENE = 1;
-const ENTIRE_SCENE = 0;
 
 export const CustomRenderer = () => {
   const glowing = useMemo(() => {
@@ -159,7 +63,7 @@ export const CustomRenderer = () => {
           <meshPhongMaterial color="#0000ff" />
         </mesh>
 
-        <Renderer />
+        <BloomLayeredRenderer bloomLayer={BLOOM_SCENE} />
       </Canvas>
     </Container>
   );

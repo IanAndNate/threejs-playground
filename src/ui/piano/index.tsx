@@ -3,17 +3,14 @@
  * - draw some boxes representing the piano keys
  * - when a key is pressed, show a bloom effect on the key so it "glows"
  */
-import { Canvas, extend, useThree, Vector2, Vector3 } from "@react-three/fiber";
-import React, { useEffect, useRef, useState } from "react";
+import { Canvas, extend, useFrame, Vector3 } from "@react-three/fiber";
+import React, { useEffect, useRef } from "react";
 import styled from "@emotion/styled";
 import { CameraControls } from "../common/camera-controls";
-import {
-  SelectiveBloom,
-  EffectComposer,
-  Bloom,
-} from "@react-three/postprocessing";
-import { DoubleSide, Mesh } from "three";
+import { Mesh } from "three";
 import { OrbitControls } from "@react-three/drei";
+import { BloomLayeredRenderer } from "../custom-renderer/bloom-layered-renderer";
+import create from "zustand";
 
 extend({ OrbitControls });
 
@@ -23,9 +20,53 @@ const Container = styled.div`
   border: 1px solid black;
 `;
 
-const Key = ({ position, color }: { position: Vector3; color: string }) => {
+interface State {
+  keysDown: Set<string>;
+  keyDown: (e: KeyboardEvent) => void;
+  keyUp: (e: KeyboardEvent) => void;
+}
+
+const useStore = create<State>((set, get) => ({
+  keysDown: new Set<string>(),
+  keyDown: (e: KeyboardEvent) => {
+    const { keysDown } = get();
+    keysDown.add(e.key);
+    set({ keysDown });
+  },
+  keyUp: (e: KeyboardEvent) => {
+    const { keysDown } = get();
+    keysDown.delete(e.key);
+    set({ keysDown });
+  },
+}));
+
+const KeyboardControls = () => {
+  const { keyDown, keyUp } = useStore(({ keyDown, keyUp }) => ({ keyDown, keyUp }));
+  useEffect(() => {
+    window.addEventListener('keydown', keyDown);
+    window.addEventListener('keyup', keyUp);
+    return () => {
+      window.removeEventListener('keydown', keyDown);
+      window.removeEventListener('keyup', keyUp);
+    }
+  }, [keyDown, keyUp]);
+  return null;
+}
+
+const Key = ({ position, color, keyCode }: { position: Vector3; color: string; keyCode: string }) => {
+  const meshRef = useRef<Mesh>();
+  useFrame(() => {
+    if (meshRef.current) {
+      const { keysDown } = useStore.getState();
+      if (keysDown.has(keyCode)) {
+        meshRef.current.layers.enable(1);
+      } else {
+        meshRef.current.layers.disable(1);
+      }
+    }
+  });
   return (
-    <mesh position={position}>
+    <mesh position={position} ref={meshRef}>
       <boxGeometry args={[1, 5, 0.3]} attach="geometry" />
       <meshPhongMaterial color={color} />
     </mesh>
@@ -33,6 +74,11 @@ const Key = ({ position, color }: { position: Vector3; color: string }) => {
 };
 
 export const Piano = () => {
+  const KEYS = "qwertyuiop".split('');
+  const keys = KEYS.map((keyCode, idx) => {
+    const xPos = 1.3 * idx - (KEYS.length * 1.3 / 2);
+    return <Key position={[xPos, 0, 0]} color="white" keyCode={keyCode} key={idx} />;
+  });
   return (
     <Container>
       <Canvas
@@ -42,36 +88,12 @@ export const Piano = () => {
       >
         <color attach="background" args={["black"]} />
         <CameraControls lookAt={[0, 0, 0]} />
-        <Key position={[0, 0, 0]} color="white" />
-        <Key position={[1.3, 0, 0]} color="#808080" />
-        <ambientLight intensity={0.2} />
+        {keys}
+        <ambientLight intensity={0.3} />
         <directionalLight position={[3, -2, 4]} intensity={0.5} />
-        {/* <EffectComposer multisampling={8}>
-           <SelectiveBloom
-             kernelSize={5}
-             luminanceThreshold={0}
-             luminanceSmoothing={0.4}
-             intensity={2.0}
-             // selectionLayer={10}
-             selection={bloomRef}
-           />
-         </EffectComposer> */}
-
-        <EffectComposer multisampling={8}>
-          <Bloom
-            kernelSize={3}
-            luminanceThreshold={0}
-            luminanceSmoothing={0.4}
-            intensity={0.6}
-          />
-          <Bloom
-            kernelSize={5}
-            luminanceThreshold={0}
-            luminanceSmoothing={0}
-            intensity={0.5}
-          />
-        </EffectComposer>
+        <BloomLayeredRenderer bloomLayer={1}/>
       </Canvas>
+      <KeyboardControls/>
     </Container>
   );
 };
